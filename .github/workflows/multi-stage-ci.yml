@@ -1,0 +1,56 @@
+name: Multi-Stage CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Build Docker image
+        run: docker build -t my-first-ci-cd:${{ github.sha }} .
+
+      - name: List Docker images
+        run: docker images
+
+  test:
+    name: Smoke Test Docker
+    needs: build       
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Docker container
+        run: |
+          docker run -d --name test-container my-first-ci-cd:${{ github.sha }}
+          sleep 5
+          docker ps
+          docker logs test-container
+          docker stop test-container
+
+  deploy:
+    name: Deploy to Production
+    needs: test   
+    if: github.ref == 'refs/heads/main'  # bara deploya från main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy
+        run: echo "Deploying Docker image to production..." 
+        
+   
+
