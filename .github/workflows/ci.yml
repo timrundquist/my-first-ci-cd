@@ -14,18 +14,30 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    # Install dependencies
+    - name: Install dependencies
+      run: npm install
+
+    # Run Jest tests
+    - name: Run tests
+      run: npm test
+
+    # Build Docker image
     - name: Build Docker image
       run: docker build -t my-first-ci-cd:${{ github.sha }} .
 
+    # Show images
     - name: List Docker images
       run: docker images
 
-    - name: Test Docker image runs
+    # Test container runs
+    - name: Test Docker container
       run: |
         docker run -d --name test-container my-first-ci-cd:${{ github.sha }}
         sleep 5
         docker ps
         docker logs test-container
         docker stop test-container
+
 
 
